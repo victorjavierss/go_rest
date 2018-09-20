@@ -1,0 +1,6 @@
+database: 
+  name: demo
+  password: example
+  user: root
+  addr: db
+port: 8081
