@@ -8,6 +8,6 @@ import (
 type Index struct {
 }
 
-func (i Index) Handle (w http.ResponseWriter, r *http.Request) {
+func (i Index) Get (w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "I'm a REST API :-)")
 }

@@ -14,7 +14,6 @@ func main() {
 
 	log.Println("Running api server in dev mode")
 
-
     defer deps.Database.Close()
 	http.ListenAndServe(":8081", r)
 }

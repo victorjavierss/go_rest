@@ -36,7 +36,7 @@ docker-compose up
 
 For building the docker image:
 ```bash
-docker build .
+docker-compose build api
 ```
 
 For running the API execute:

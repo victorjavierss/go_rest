@@ -13,8 +13,9 @@ WORKDIR /go/src/github.com/user/app
 
 RUN go get github.com/gorilla/mux
 RUN go get github.com/urfave/negroni
-RUN go get github.com/go-sql-driver/mysql
+RUN go get upper.io/db.v3/mysql
 RUN go get gopkg.in/yaml.v2
+RUN go get github.com/bradfitz/gomemcache/memcache
 
 RUN go build
 

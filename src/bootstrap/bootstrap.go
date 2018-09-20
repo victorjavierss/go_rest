@@ -2,14 +2,15 @@ package bootstrap
 
 import (
 	"os"
-	"fmt"
 	"log"
 	"io/ioutil"
-	"database/sql"
 
-    "gopkg.in/yaml.v2"
-	_ "github.com/go-sql-driver/mysql"
+	"gopkg.in/yaml.v2"
+	"upper.io/db.v3/lib/sqlbuilder"
+	"upper.io/db.v3/mysql"
+	"github.com/bradfitz/gomemcache/memcache"
 )
+
 
 type AppConfig struct {
     Database struct {
@@ -18,12 +19,18 @@ type AppConfig struct {
         User string `yaml:"user"`
         Addr string `yaml:"addr"`
     }
+
+	Memcached struct {
+        Addr string `yaml:"addr"`
+    }
+
 	Port string `yaml:"port"`
 }
 
 type Dependecies struct {
-	Database *sql.DB
+	Database sqlbuilder.Database
 	AppConfig AppConfig
+	Cache *memcache.Client
 }
 
 func Init () Dependecies {
@@ -41,27 +48,39 @@ func Init () Dependecies {
 	err = yaml.Unmarshal(yamlFile, &config)
 
 	if err != nil {
-		log.Fatalf("Unable to load configuration\n %v", err)
+		log.Fatalf("Unable to load configuration\n#%v", err)
 	}
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", config.Database.User, config.Database.Password, config.Database.Addr, config.Database.Name)
-	log.Printf("DB DSN [%s]", dsn)
+	// ConnectionURL implements a MySQL connection struct.
+	DBsettings := mysql.ConnectionURL{
+		User     : config.Database.User,
+		Password : config.Database.Password,
+		Host     : config.Database.Addr,
+		Database : config.Database.Name,
+	}
+  
+  	db, errDb := mysql.Open(DBsettings)
 
-	db, errDb := sql.Open("mysql", dsn)
+	//log.Sprintf("Using Database [%s@$s]", config.Database.Name, config.Database.Addr)
 
 	if errDb != nil {
-		log.Fatalf("Unable to connect to DB \n %v", errDb)
+		log.Fatalf("Unable to connect to DB \n#%v", errDb)
 	}
 
 	errDb = db.Ping() 
 
 	if errDb != nil {
-		log.Fatalf("DB connection Error \n %#v", errDb)
+		log.Fatalf("DB connection error\n%#v", errDb)
 	}
+
+	log.Printf("Memcached [%+v]", config.Memcached);
+
+	mc := memcache.New( config.Memcached.Addr )
 
 	deps := Dependecies{
 		Database  : db,
 		AppConfig : config,
+		Cache     : mc,
 	}
 
 	return deps
