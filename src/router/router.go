@@ -7,12 +7,11 @@ import (
 	"encoding/json"
 
 	"github.com/gorilla/mux"
-	//"github.com/bradfitz/gomemcache/memcache"
+	"github.com/bradfitz/gomemcache/memcache"
 
 	"github.com/user/app/index"
 	"github.com/user/app/bootstrap"
 	"github.com/user/app/collection"
-	//"upper.io/db.v3/mysql"
 )
 
 var dependecies bootstrap.Dependecies
@@ -31,40 +30,44 @@ func InitRoutes (deps bootstrap.Dependecies) *mux.Router {
 
 
 func usersHandler(w http.ResponseWriter, r *http.Request) {
-	//_, err := dependecies.Cache.Get("mykey") 
 
-	userCollection := dependecies.Database.Collection("users")
+	userItem, err := dependecies.Cache.Get("users")
+	var usersJson []byte
 
-  	res := userCollection.Find()
-
-	var users []collection.User
-
-	err := res.All(&users)
-
-	if err != nil {
-		log.Fatalf("res.All(): %q\n", err)
-	}
-
-	usersJson, err := json.Marshal(users)
-
-	/* if err != nil {
+	 if err != nil {
 		if err == memcache.ErrCacheMiss {
-			fmt.Fprintf(w, "Cache MISS")
+			log.Printf("Cache MISS")
 
-			err = dependecies.Cache.Set(&memcache.Item{Key: "mykey", Value: []byte("my value")})
+			userCollection := dependecies.Database.Collection("users")
+
+			res := userCollection.Find()
+
+			var users []collection.User
+
+			err := res.All(&users)
+
+			if err != nil {
+				log.Fatalf("res.All(): %q\n", err)
+			}
+			
+			usersJson, err = json.Marshal(users)
+			err = dependecies.Cache.Set(&memcache.Item{
+				Key: "users", 
+				Value: usersJson,
+				Expiration: 180,
+			})
 			if err != nil {
 				log.Println("Error setting cache #%v", err)
 			}
-
 		} else {
 			log.Println("Error from cache #%v", err)
 		}
-		
 	} else {
-		fmt.Fprintf(w, "Cache HIT")
-	} */
+		log.Printf("Cache HIT")
+		usersJson = userItem.Value;
+	} 
 
 
-
+	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, string(usersJson))
 }

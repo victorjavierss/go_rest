@@ -61,7 +61,7 @@ func Init () Dependecies {
   
   	db, errDb := mysql.Open(DBsettings)
 
-	//log.Sprintf("Using Database [%s@$s]", config.Database.Name, config.Database.Addr)
+	log.Printf("Using Database [%s@%s]", config.Database.Name, config.Database.Addr)
 
 	if errDb != nil {
 		log.Fatalf("Unable to connect to DB \n#%v", errDb)
