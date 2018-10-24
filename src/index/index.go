@@ -1,13 +1,17 @@
 package index
 
 import (
-	"net/http"
 	"fmt"
+	"net/http"
 )
 
-type Index struct {
+type IndexCtrl struct {
 }
 
-func (i Index) Get (w http.ResponseWriter, r *http.Request) {
+func NewCtrl() IndexCtrl {
+	return IndexCtrl{}
+}
+
+func (i IndexCtrl) Get(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "I'm a REST API :-)")
 }
